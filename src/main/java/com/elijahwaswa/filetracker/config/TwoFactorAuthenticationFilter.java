@@ -18,6 +18,9 @@ import java.io.IOException;
 
 @Component
 public class TwoFactorAuthenticationFilter extends OncePerRequestFilter {
+
+//    private final String twoFactorAuthenticationUrl = Helpers.TWO_FACTOR_AUTHENTICATION_URL;
+    private final String twoFactorAuthenticationUrl = Helpers.TWO_FACTOR_AUTHENTICATION_TOTP_URL;
     private final HttpSession session;
     private final RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
 
@@ -37,7 +40,7 @@ public class TwoFactorAuthenticationFilter extends OncePerRequestFilter {
         boolean valid2FA = isValid2FA();
 
         // If user is already authenticated and request is for /2fa, login etc, redirect to /authenticated route
-        if (principal instanceof CustomUserDetails && valid2FA && (request.getServletPath().equalsIgnoreCase(Helpers.TWO_FACTOR_AUTHENTICATION_URL) || request.getServletPath().equalsIgnoreCase(Helpers.LOGIN_URL))) {
+        if (principal instanceof CustomUserDetails && valid2FA && (request.getServletPath().equalsIgnoreCase(twoFactorAuthenticationUrl) || request.getServletPath().equalsIgnoreCase(Helpers.LOGIN_URL))) {
             redirectStrategy.sendRedirect(request, response, Helpers.AUTHENTICATED_ROOT_URL);
             return;
         }
@@ -50,7 +53,7 @@ public class TwoFactorAuthenticationFilter extends OncePerRequestFilter {
 
         //check if 2FA was valid
         if (principal instanceof CustomUserDetails && !valid2FA) {
-            redirectStrategy.sendRedirect(request, response, Helpers.TWO_FACTOR_AUTHENTICATION_URL);
+            redirectStrategy.sendRedirect(request, response, twoFactorAuthenticationUrl);
             return;
         }
 
@@ -59,7 +62,7 @@ public class TwoFactorAuthenticationFilter extends OncePerRequestFilter {
 
     private boolean requires2FAAuthentication(HttpServletRequest request) {
         //don't check for login & 2fa routes
-        return !request.getServletPath().equalsIgnoreCase(Helpers.LOGIN_URL) && !request.getServletPath().equalsIgnoreCase(Helpers.TWO_FACTOR_AUTHENTICATION_URL);
+        return !request.getServletPath().equalsIgnoreCase(Helpers.LOGIN_URL) && !request.getServletPath().equalsIgnoreCase(Helpers.TWO_FACTOR_AUTHENTICATION_URL) && !request.getServletPath().equalsIgnoreCase(Helpers.TWO_FACTOR_AUTHENTICATION_TOTP_URL);
     }
 
     private boolean isValid2FA() {

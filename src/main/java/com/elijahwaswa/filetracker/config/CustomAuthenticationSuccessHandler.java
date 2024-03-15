@@ -35,12 +35,12 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
         //Generate a 2FA code
         String twoFactorCode = generateTwoFactorCode();
         userDetails.setTwoFactorCode(twoFactorCode);
-        System.out.println("2FA code: " + twoFactorCode);
 
         //send the 2FA code to the user's email in a new thread
 //        executorService.execute(()->emailService.sendSimpleMessage(userDetails.getDepartment(), "Your 2FA Code", "Your 2FA code is: " + twoFactorCode));
 
-        response.sendRedirect(Helpers.TWO_FACTOR_AUTHENTICATION_URL);
+        response.sendRedirect(Helpers.TWO_FACTOR_AUTHENTICATION_TOTP_URL);
+//        response.sendRedirect(Helpers.TWO_FACTOR_AUTHENTICATION_URL);
     }
 
     private String generateTwoFactorCode(){

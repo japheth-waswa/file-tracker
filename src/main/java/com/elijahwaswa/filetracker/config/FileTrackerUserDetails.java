@@ -29,7 +29,6 @@ public class FileTrackerUserDetails implements UserDetailsService {
         List<GrantedAuthority> authorities = new ArrayList<>();
         String roles = user.getRoles();
         String rights = user.getRights();
-        String department = user.getDepartment();
         if (roles != null && !roles.isEmpty()) {
             //split where , is found
             Arrays.stream(roles.split(",")).sequential().forEach(role -> {
@@ -43,6 +42,6 @@ public class FileTrackerUserDetails implements UserDetailsService {
             });
         }
 
-        return new CustomUserDetails(username, password, true, true, true, true, authorities, department);
+        return new CustomUserDetails(username, password, true, true, true, true, authorities, user);
     }
 }
