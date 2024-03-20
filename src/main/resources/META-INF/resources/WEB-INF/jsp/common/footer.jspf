@@ -1,0 +1,14 @@
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+
+<%--<c:if test="${sideNavAllowed == null || sideNavAllowed==true}">--%>
+<%--    </div>--%>
+<%--</div>--%>
+<%--</c:if>--%>
+</div>
+<script src="/webjars/jquery/3.7.1/jquery.min.js"></script>
+<script src="/webjars/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+<c:if test="${allowDataTable ==true}">
+    <script src="/plugins/DataTables/datatables.min.js"></script>
+</c:if>
+</body>
+</html>

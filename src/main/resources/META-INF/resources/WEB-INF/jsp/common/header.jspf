@@ -1,0 +1,26 @@
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+
+<!doctype html>
+<html lang="en" data-bs-theme="auto">
+<head>
+    <meta charset="utf-8">
+    <title>My Application</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/webjars/bootstrap/5.3.3/css/bootstrap.min.css">
+    <%--    <link rel="stylesheet" href="/webjars/bootstrap-icons/1.7.2/font/bootstrap-icons.css">--%>
+    <c:if test="${allowDataTable ==true}">
+        <link rel="stylesheet" href="/plugins/DataTables/datatables.min.css">
+    </c:if>
+    <link rel="stylesheet" href="/css/app.css">
+</head>
+<body class="text-bg-light">
+<c:if test="${topNavAllowed == null || topNavAllowed==true}">
+    <%@include file="navbar-top.jspf"%>
+</c:if>
+<div class="ms-3 me-3 mt-3">
+
+<%--<c:if test="${sideNavAllowed == null || sideNavAllowed==true}">--%>
+<%--<div class="row">--%>
+<%--    <div class="col-2"><%@include file="side-nav.jspf"%></div>--%>
+<%--    <div class="col-10">--%>
+<%--</c:if>--%>

@@ -1,0 +1,70 @@
+@font-face {
+    font-family: Manrope;
+    src: url(/fonts/Manrope/Manrope-VariableFont_wght.ttf);
+}
+
+body {
+    font-family: Manrope;
+    font-size: 11px;
+}
+
+.fs-9px {
+    font-size: 9px;
+}
+
+.fs-10px {
+    font-size: 10px;
+}
+
+.fs-11px {
+    font-size: 11px;
+}
+
+.fs-12px {
+    font-size: 12px;
+}
+
+.fs-13px {
+    font-size: 13px;
+}
+
+.fs-14px {
+    font-size: 14px;
+}
+
+.fs-15px {
+    font-size: 15px;
+}
+
+.form-control:focus, .form-select:focus, .page-link:focus {
+    box-shadow: none;
+}
+
+.form-control,.form-select {
+    border-radius: 0;
+    font-size: 11px;
+}
+
+.page-link {
+    font-size: 11px;
+    border-radius: 0 !important;
+}
+
+.dt-length select {
+    font-size: 11px;
+}
+
+.card {
+    border-radius: 0;
+}
+
+.btn{
+    border-radius: 0;
+    font-size: 11px;
+}
+.dropdown-item,.navbar-toggler{
+    font-size:11px;
+}
+.dropdown-menu,.navbar-toggler,.alert{
+    border-radius: 0 !important;
+}

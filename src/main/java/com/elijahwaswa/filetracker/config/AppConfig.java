@@ -7,12 +7,16 @@ import dev.samstevens.totp.qr.ZxingPngQrGenerator;
 import dev.samstevens.totp.secret.DefaultSecretGenerator;
 import dev.samstevens.totp.secret.SecretGenerator;
 import dev.samstevens.totp.time.SystemTimeProvider;
-import dev.samstevens.totp.time.TimeProvider;
+import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class AppConfig {
+    @Bean
+    public ModelMapper modelMapper(){
+        return new ModelMapper();
+    }
     @Bean
     public SecretGenerator secretGenerator() {
         return new DefaultSecretGenerator();
