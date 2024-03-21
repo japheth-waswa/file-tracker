@@ -51,7 +51,8 @@ public class DepartmentController {
                         row.add(Helpers.loadJspIntoString(request, response, "department/action.jsp", variables));
                         return row;
                     }).toList();
-        } catch (Exception e) {}
+        } catch (Exception e) {
+        }
 
         //return payload
         Map<String, Object> payload = new HashMap<>();
@@ -87,10 +88,13 @@ public class DepartmentController {
             return manageDepartment(model, false, null);
         }
 
-        if (department.getId() != null) {
-            departmentService.updateDepartment(department);
-        } else {
-            departmentService.saveDepartment(department);
+        try {
+            if (department.getId() != null) {
+                departmentService.updateDepartment(department);
+            } else {
+                departmentService.saveDepartment(department);
+            }
+        } catch (Exception e) {
         }
         return "redirect:/departments";
     }

@@ -2,6 +2,7 @@ package com.elijahwaswa.filetracker.config.security;
 
 import com.elijahwaswa.filetracker.model.User;
 import com.elijahwaswa.filetracker.repository.UserRepository;
+import com.elijahwaswa.filetracker.util.AccountStatus;
 import com.elijahwaswa.filetracker.util.Helpers;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -42,7 +43,6 @@ public class FileTrackerUserDetails implements UserDetailsService {
                 authorities.add(new SimpleGrantedAuthority(right));
             });
         }
-
-        return new CustomUserDetails(username, password, true, true, true, true, authorities, user);
+        return new CustomUserDetails(username, password,  user.getAccountStatus() == AccountStatus.ACTIVE, true, true, true, authorities, user);
     }
 }

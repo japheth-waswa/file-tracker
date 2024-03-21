@@ -111,7 +111,6 @@ public class UserController {
     @PostMapping("manage")
     public String modifyUser(Model model, @Valid UserDto userDto, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            System.out.println(bindingResult.getAllErrors());
             return managePage(model, false, null);
         }
 

@@ -1,5 +1,6 @@
 package com.elijahwaswa.filetracker.service.department;
 
+import com.elijahwaswa.filetracker.exception.ex.InternalException;
 import com.elijahwaswa.filetracker.exception.ex.ResourceNotFoundException;
 import com.elijahwaswa.filetracker.model.Department;
 import com.elijahwaswa.filetracker.repository.DepartmentRepository;
@@ -34,6 +35,10 @@ public class DepartmentServiceImpl implements DepartmentService {
         Department departmentRecord = departmentRepository.findById(department.getId());
         if (departmentRecord == null)
             throw new ResourceNotFoundException("Department with id " + department.getId() + " not found");
+
+        //if default department, dont update it
+        if (departmentRecord.getName().equalsIgnoreCase(Helpers.DEFAULT_DEPARTMENT_NAME))
+            throw new InternalException("Default department cannot be updated");
 
         //configure ModelMapper to skip null values
         modelMapper.getConfiguration().setSkipNullEnabled(true);

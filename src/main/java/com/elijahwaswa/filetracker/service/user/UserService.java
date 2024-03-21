@@ -14,8 +14,8 @@ public interface UserService {
     UserDto saveUser(UserDto userDto);
     UserDto updateUser(UserDto userDto);
     UserDto fetchUser(String idNumber) throws ResourceNotFoundException;
-    UserDto fetchUserByResetPasswordToken(String resetPasswordToken) throws ResourceNotFoundException;
     UserDto fetchUser(UUID id) throws ResourceNotFoundException;
+    UserDto fetchUserByResetPasswordToken(String resetPasswordToken) throws ResourceNotFoundException;
     List<UserDto> fetchUsers(int pageNumber,int pageSize) throws ResourceNotFoundException;
     List<UserDto> fetchUsers(int pageNumber,int pageSize,String idNumber) throws ResourceNotFoundException;
     List<UserDto> fetchUsersByRole(int pageNumber, int pageSize, UserRole userRole) throws ResourceNotFoundException;

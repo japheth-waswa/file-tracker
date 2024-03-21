@@ -32,10 +32,19 @@ public class Config {
                 .addFilterBefore(twoFactorAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(authorizeRequests ->
                         {
-                            for(String path: Helpers.PUBLIC_PATHS){
+                            for (String path : Helpers.PUBLIC_PATHS) {
                                 authorizeRequests.requestMatchers(path).permitAll();
                             }
-                            authorizeRequests.requestMatchers("/departments/**").hasAnyRole(UserRole.SU.name(), UserRole.ADMIN.name())
+                            authorizeRequests
+                                    .requestMatchers("/users/**").hasAnyRole(UserRole.SU.name(), UserRole.ADMIN.name())
+                                    .requestMatchers("/departments/**").hasAnyRole(UserRole.SU.name(), UserRole.ADMIN.name())
+                                    .requestMatchers("/files/delete").hasAnyRole(UserRole.SU.name())
+                                    .requestMatchers("files/manage").access(
+                                            new WebExpressionAuthorizationManager(
+                                                    "hasRole(T(com.elijahwaswa.filetracker.util.UserRole).SU.name()) or hasRole(T(com.elijahwaswa.filetracker.util.UserRole).ADMIN.name()) or (hasRole(T(com.elijahwaswa.filetracker.util.UserRole).USER.name()) and hasAuthority(T(com.elijahwaswa.filetracker.util.UserRight).SUPERVISOR.name()))"
+                                            )
+                                    )
+                                    .requestMatchers("/files/**").hasAnyRole(UserRole.SU.name(), UserRole.ADMIN.name(), UserRole.USER.name())
                                     .requestMatchers("/hello/su").hasRole(UserRole.SU.name())
                                     .requestMatchers("/hello/admin").hasRole(UserRole.ADMIN.name())
                                     .requestMatchers("/hello/user").hasRole(UserRole.USER.name())
@@ -55,7 +64,7 @@ public class Config {
                 )
                 .logout(logout -> logout
                         .logoutSuccessUrl(Helpers.LOGIN_URL + "?logout=true")
-                                .permitAll()
+                        .permitAll()
                 )
                 .csrf(AbstractHttpConfigurer::disable);
         return http.build();
@@ -71,7 +80,7 @@ public class Config {
         ThymeleafViewResolver viewResolver = new ThymeleafViewResolver();
         viewResolver.setTemplateEngine(templateEngine);
         viewResolver.setOrder(0); // Set order to 0 so it has higher precedence than JSP
-        viewResolver.setViewNames(new String[] {Helpers.LOGIN_PAGE_VIEW,Helpers.RESET_PASSWORD_PAGE_VIEW,Helpers.NEW_PASSWORD_PAGE_VIEW}); // Only resolve specific views with Thymeleaf
+        viewResolver.setViewNames(new String[]{Helpers.LOGIN_PAGE_VIEW, Helpers.RESET_PASSWORD_PAGE_VIEW, Helpers.NEW_PASSWORD_PAGE_VIEW}); // Only resolve specific views with Thymeleaf
         return viewResolver;
     }
 }

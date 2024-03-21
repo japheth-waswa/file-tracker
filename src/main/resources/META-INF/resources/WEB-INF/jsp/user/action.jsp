@@ -17,8 +17,8 @@
                 Are you sure you want to delete the account belonging to <strong>${fullNames}</strong>!
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-sm btn-danger fs-11px" data-bs-dismiss="modal">Ignore</button>
-                <a type="button" class="btn bnt-sm btn-primary fs-11px" href="/users/delete?id=${user.id}">Proceed</a>
+                <button type="button" class="btn btn-sm btn-primary fs-11px" data-bs-dismiss="modal">Ignore</button>
+                <a type="button" class="btn bnt-sm btn-danger fs-11px" href="/users/delete?id=${user.id}">Delete</a>
             </div>
         </div>
     </div>

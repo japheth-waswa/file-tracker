@@ -10,11 +10,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class Helpers {
@@ -36,6 +39,7 @@ public class Helpers {
     public static final String NEW_PASSWORD_PAGE_VIEW = "auth/new-password";
     public static final int OTP_EXPIRY_MINUTES = 5;
     public static final int RESET_PASSWORD_EXPIRY_MINUTES = 60*24;//24 hrs
+    public static final String DEFAULT_DEPARTMENT_NAME = "storage";
 
     private Helpers() {
     }
@@ -88,6 +92,16 @@ public class Helpers {
 
     public static String generateBaseUrl(HttpServletRequest request){
         return request.getScheme() + "://" + request.getServerName() + (request.getServerPort() != 80 ? ":" + request.getServerPort() : "");
+    }
+
+    public static Set<UserRole> parseAuthenticatedRoles(Authentication authentication){
+        Set<String> roles = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toSet());
+        return roles.stream().filter(role->role.contains(ROLE_PREPEND)).map(role -> UserRole.valueOf(role.replace(ROLE_PREPEND,""))).collect(Collectors.toSet());
+    }
+
+    public static Set<UserRight> parseAuthenticatedRights(Authentication authentication){
+        Set<String> rights = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toSet());
+        return rights.stream().filter(right->!right.contains(ROLE_PREPEND)).map(UserRight::valueOf).collect(Collectors.toSet());
     }
 
 }

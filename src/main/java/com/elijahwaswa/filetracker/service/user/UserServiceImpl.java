@@ -26,7 +26,6 @@ import java.util.UUID;
 @Service
 @AllArgsConstructor
 public class UserServiceImpl implements UserService {
-
     private  ModelMapper modelMapper;
     private PasswordEncoder passwordEncoder;
     private  UserRepository userRepository;
@@ -65,7 +64,7 @@ public class UserServiceImpl implements UserService {
             }
         } catch (Exception e) {}
 
-        //if Helpers.SU_ADMIN_ID is being updated, then don't allow some fields not to be updated.
+        //if Helpers.SU_ADMIN_ID is being updated, then disable some fields from update.
         if(user.getIdNumber().equalsIgnoreCase(Helpers.SU_ADMIN_ID)){
             userDto.setIdNumber(user.getIdNumber());
             userDto.setRoles(user.getRoles());

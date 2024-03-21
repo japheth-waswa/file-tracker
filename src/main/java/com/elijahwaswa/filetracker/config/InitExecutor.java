@@ -1,6 +1,8 @@
 package com.elijahwaswa.filetracker.config;
 
+import com.elijahwaswa.filetracker.model.Department;
 import com.elijahwaswa.filetracker.model.User;
+import com.elijahwaswa.filetracker.repository.DepartmentRepository;
 import com.elijahwaswa.filetracker.repository.UserRepository;
 import com.elijahwaswa.filetracker.util.AccountStatus;
 import com.elijahwaswa.filetracker.util.Helpers;
@@ -21,27 +23,40 @@ public class InitExecutor implements CommandLineRunner {
 
     private PasswordEncoder passwordEncoder;
     private UserRepository userRepository;
+    private DepartmentRepository deparmentRepository;
     private final String SU_ROLES = Arrays.stream(UserRole.values()).map(UserRole::name).collect(Collectors.joining(","));
     private final String SU_RIGHTS = Arrays.stream(UserRight.values()).map(UserRight::name).collect(Collectors.joining(","));
 
     @Override
     public void run(String... args) throws Exception {
-        // check if super admin exists in db, if not,then create.
-        String SU_ADMIN_ID = Helpers.SU_ADMIN_ID;
-        User adminUser = userRepository.findByIdNumber(SU_ADMIN_ID);
-        if (adminUser == null) {
-            User user = new User();
-            user.setAccountStatus(AccountStatus.ACTIVE);
-            user.setIdNumber(SU_ADMIN_ID);
-            user.setPassword(passwordEncoder.encode(Helpers.USER_DEFAULT_PASSWORD));
-            user.setRoles(SU_ROLES);
-            user.setRights(SU_RIGHTS);
-            user.setDepartment("Super Admin");
-            user.setFirstName("Jeff");
-            user.setMiddleName("Elijah");
-            user.setOtherNames("Waswa");
-            user.setEmail("japhethwaswa@gmail.com");
-            userRepository.save(user);
-        }
+        try{
+            // check if super admin exists in db, if not,then create.
+            String SU_ADMIN_ID = Helpers.SU_ADMIN_ID;
+            User adminUser = userRepository.findByIdNumber(SU_ADMIN_ID);
+            if (adminUser == null) {
+                User user = new User();
+                user.setAccountStatus(AccountStatus.ACTIVE);
+                user.setIdNumber(SU_ADMIN_ID);
+                user.setPassword(passwordEncoder.encode(Helpers.USER_DEFAULT_PASSWORD));
+                user.setRoles(SU_ROLES);
+                user.setRights(SU_RIGHTS);
+                user.setDepartment("Super Admin");
+                user.setFirstName("Admin");
+                user.setMiddleName("Super");
+                user.setOtherNames("Admin");
+                user.setEmail("royalportersltd@gmail.com");
+                userRepository.save(user);
+            }
+        }catch(Exception e){}
+
+        try{
+            //create default department
+            Department department = deparmentRepository.findByName(Helpers.DEFAULT_DEPARTMENT_NAME);
+            if (department == null) {
+                Department defaultDepartment = new Department();
+                defaultDepartment.setName(Helpers.DEFAULT_DEPARTMENT_NAME);
+                deparmentRepository.save(defaultDepartment);
+            }
+        }catch(Exception e){}
     }
 }
