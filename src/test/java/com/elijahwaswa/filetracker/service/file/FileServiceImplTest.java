@@ -76,9 +76,7 @@ class FileServiceImplTest {
         FileDto savedFile3 = fileService.saveFile(file3, "0987", "Peter Pan", "Valuation");
         //update
         savedFile3.setAreaSize(45.997);
-        FileDto updatedFile = fileService.updateFile(savedFile3, "4321", "Jane Doe", "Registrar",
-                List.of(UserRole.SU, UserRole.ADMIN),
-                null);
+        FileDto updatedFile = fileService.updateFile(savedFile3);
         assertEquals(savedFile3.getAreaSize(), updatedFile.getAreaSize());
     }
 
@@ -89,8 +87,7 @@ class FileServiceImplTest {
         FileDto savedFile3 = fileService.saveFile(file3, "0987", "Peter Pan", "Valuation");
         //update
         savedFile2.setLrNo("lr.no 209/1235");
-        assertThrows(InternalException.class, () -> fileService.updateFile(savedFile2, "4321", "Jane Doe", "Registrar",
-                List.of(UserRole.USER), null));
+        assertThrows(InternalException.class, () -> fileService.updateFile(savedFile2));
     }
 
     @Test
@@ -198,16 +195,49 @@ class FileServiceImplTest {
         FileDto savedFile2 = fileService.saveFile(file2, "4321", "Jane Doe", "Registrar");
         FileDto savedFile3 = fileService.saveFile(file3, "0987", "Peter Pan", "Valuation");
         assertEquals(1, fileService.countByLrNo(file1.getLrNo()));
-        assertEquals(0,  fileService.countByLrNo("delivery"));
+        assertEquals(0, fileService.countByLrNo("delivery"));
     }
 
     @Test
     void countByFileStatus() {
-        assertEquals(0,fileService.countByFileStatus(FileStatus.TRANSACTABLE));
+        assertEquals(0, fileService.countByFileStatus(FileStatus.TRANSACTABLE));
         FileDto savedFile1 = fileService.saveFile(file1, "1234", "John Doe", "Lands");
         FileDto savedFile2 = fileService.saveFile(file2, "4321", "Jane Doe", "Registrar");
         FileDto savedFile3 = fileService.saveFile(file3, "0987", "Peter Pan", "Valuation");
         assertEquals(1, fileService.countByFileStatus(FileStatus.LOCKED));
         assertEquals(2, fileService.countByFileStatus(FileStatus.TRANSACTABLE));
+    }
+
+    @Test
+    void fetchFiles() {
+        fileService.saveFile(file1, "1234", "John Doe", "Lands");
+        fileService.saveFile(file2, "4321", "Jane Doe", "Registrar");
+        fileService.saveFile(file3, "0987", "Peter Pan", "Valuation");
+        List<FileDto> files = fileService.fetchFiles("4321", 0, 10);
+        assertEquals(1, files.size());
+        assertEquals(file2.getLrNo().toLowerCase(), files.getFirst().getLrNo());
+    }
+
+    @Test
+    void countByCurrentUserIdNumber() {
+        file1.setCurrentUserIdNumber("1234");
+        file2.setCurrentUserIdNumber("4321");
+        file3.setCurrentUserIdNumber("4321");
+        fileService.saveFile(file1, "1234", "John Doe", "Lands");
+        fileService.saveFile(file2, "4321", "Jane Doe", "Registrar");
+        fileService.saveFile(file3, "4321", "Peter Pan", "Valuation");
+        long total = fileService.countByCurrentUserIdNumber("4321");
+        assertEquals(2, total);
+    }
+
+    @Test
+    void fetchFile() {
+        fileService.saveFile(file1, "0987", "John Doe", "Lands");
+        fileService.saveFile(file2, "4321", "Jane Doe", "Registrar");
+        FileDto savedFile3 = fileService.saveFile(file3, "0987", "Peter Pan", "Valuation");
+        FileDto fileDto = fileService.fetchFile(file3.getLrNo(), savedFile3.getCurrentUserIdNumber());
+        assertNotNull(fileDto);
+        assertEquals(file3.getLrNo().toLowerCase(), fileDto.getLrNo());
+        assertThrows(ResourceNotFoundException.class, () -> fileService.fetchFile(file3.getLrNo(), "test"));
     }
 }

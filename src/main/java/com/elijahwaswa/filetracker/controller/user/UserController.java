@@ -1,5 +1,6 @@
 package com.elijahwaswa.filetracker.controller.user;
 
+import com.elijahwaswa.filetracker.controller.file.FileController;
 import com.elijahwaswa.filetracker.dto.UserDto;
 import com.elijahwaswa.filetracker.model.Department;
 import com.elijahwaswa.filetracker.service.department.DepartmentService;
@@ -13,6 +14,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -28,6 +31,7 @@ public class UserController {
     private DepartmentService departmentService;
     private HttpServletRequest request;
     private HttpServletResponse response;
+    private final Logger LOGGER  = LoggerFactory.getLogger(UserController.class);
 
     @GetMapping
     public String users(Model model) {
@@ -69,7 +73,9 @@ public class UserController {
                         userRow.add(Helpers.loadJspIntoString(request, response, "user/action.jsp", variables));
                         return userRow;
                     }).toList();
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage());
+        }
 
         //return payload
         Map<String, Object> payload = new HashMap<>();
@@ -94,7 +100,9 @@ public class UserController {
         model.addAttribute("accountStatuses", AccountStatus.values());
         try{
             model.addAttribute("departments", departmentService.fetchDepartments(0,500));
-        }catch(Exception e){}
+        }catch(Exception e){
+            LOGGER.error(e.getMessage());
+        }
 
         return "user/manage";
     }

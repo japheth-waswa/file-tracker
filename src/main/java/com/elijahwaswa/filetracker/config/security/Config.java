@@ -36,6 +36,7 @@ public class Config {
                                 authorizeRequests.requestMatchers(path).permitAll();
                             }
                             authorizeRequests
+                                    .requestMatchers("/settings/**").hasAnyRole(UserRole.SU.name())
                                     .requestMatchers("/users/**").hasAnyRole(UserRole.SU.name(), UserRole.ADMIN.name())
                                     .requestMatchers("/departments/**").hasAnyRole(UserRole.SU.name(), UserRole.ADMIN.name())
                                     .requestMatchers("/files/delete").hasAnyRole(UserRole.SU.name())
@@ -44,7 +45,9 @@ public class Config {
                                                     "hasRole(T(com.elijahwaswa.filetracker.util.UserRole).SU.name()) or hasRole(T(com.elijahwaswa.filetracker.util.UserRole).ADMIN.name()) or (hasRole(T(com.elijahwaswa.filetracker.util.UserRole).USER.name()) and hasAuthority(T(com.elijahwaswa.filetracker.util.UserRight).SUPERVISOR.name()))"
                                             )
                                     )
-                                    .requestMatchers("/files/**").hasAnyRole(UserRole.SU.name(), UserRole.ADMIN.name(), UserRole.USER.name())
+                                    .requestMatchers("/files/add-file_trail").hasAnyRole(UserRole.SU.name(), UserRole.ADMIN.name())
+//                                    .requestMatchers("/files/**").hasAnyRole(UserRole.SU.name(), UserRole.ADMIN.name(), UserRole.USER.name())
+
                                     .requestMatchers("/hello/su").hasRole(UserRole.SU.name())
                                     .requestMatchers("/hello/admin").hasRole(UserRole.ADMIN.name())
                                     .requestMatchers("/hello/user").hasRole(UserRole.USER.name())

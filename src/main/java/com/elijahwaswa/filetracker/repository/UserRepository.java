@@ -31,6 +31,9 @@ public interface UserRepository extends JpaRepository<User, String> {
     @Query("SELECT u FROM User u WHERE u.roles LIKE %:userRole%")
     Page<User> findAllByRoles(String userRole, Pageable pageable);
 
+    @Query("SELECT u FROM User u WHERE u.roles LIKE %:userRole% and u.accountStatus = :accountStatus")
+    Page<User> findAllByRolesAndAccountStatus(String userRole,AccountStatus accountStatus, Pageable pageable);
+
     @Query("SELECT u FROM User u WHERE u.rights LIKE %:userRight%")
     Page<User> findAllByRights(String userRight, Pageable pageable);
 

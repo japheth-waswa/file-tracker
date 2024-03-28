@@ -38,21 +38,11 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public FileDto updateFile(FileDto fileDto, String idNumber, String fullNames, String department, List<UserRole> userRoles, List<UserRight> userRights) {
+    public FileDto updateFile(FileDto fileDto) {
         //fetch file
         File file = fileRepository.findById(fileDto.getId());
         if (file == null) throw new ResourceNotFoundException("File with id " + fileDto.getId() + " not found");
 
-//        userRoles = userRoles == null ? List.of(UserRole.USER) : userRoles;
-//        userRights = userRights == null ? List.of(UserRight.NORMAL) : userRights;
-//
-//        //ensure that only supervisor > and above are allowed to update the lrNo
-//        if (fileDto.getLrNo() != null && !file.getLrNo().equalsIgnoreCase(fileDto.getLrNo())
-//                && (!userRoles.contains(UserRole.SU)
-//                && !userRoles.contains(UserRole.ADMIN)
-//                && !(userRoles.contains(UserRole.USER) && userRights.contains(UserRight.SUPERVISOR)))) {
-//            throw new InternalException("The current user is not allowed to update the lrNo");
-//        }
         //skip null values
         modelMapper.getConfiguration().setSkipNullEnabled(true);
         modelMapper.map(fileDto, file);
@@ -76,6 +66,13 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
+    public FileDto fetchFile(String lrNo, String currentUserIdNumber) throws ResourceNotFoundException {
+        File file = fileRepository.findByLrNoAndCurrentUserIdNumber(lrNo.toLowerCase(),currentUserIdNumber.toLowerCase());
+        if (file == null) throw new ResourceNotFoundException("File with lrNo " + lrNo + " and the provided user not found");
+        return modelMapper.map(file, FileDto.class);
+    }
+
+    @Override
     public List<FileDto> fetchFiles(int pageNumber, int pageSize) throws ResourceNotFoundException {
         Page<File> files = fileRepository.findAll(Helpers.buildPageable(pageNumber, pageSize, List.of(new Sort.Order(Sort.Direction.DESC, "createdAt"))));
         return Helpers.parsePageableRecordsToList(FileDto.class, files, "No files found!");
@@ -94,9 +91,14 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
+    public List<FileDto> fetchFiles(String currentUserIdNumber, int pageNumber, int pageSize) throws ResourceNotFoundException {
+        Page<File> files = fileRepository.findAllByCurrentUserIdNumber(currentUserIdNumber, Helpers.buildPageable(pageNumber, pageSize, List.of(new Sort.Order(Sort.Direction.DESC, "createdAt"))));
+        return Helpers.parsePageableRecordsToList(FileDto.class, files, "No files found!");
+    }
+
+    @Override
     @Transactional
     public boolean deleteFile(UUID id) {
-        //todo ensure only the super admin can delete files
         fileRepository.deleteById(id);
         return true;
     }
@@ -114,5 +116,10 @@ public class FileServiceImpl implements FileService {
     @Override
     public long countByFileStatus(FileStatus fileStatus) {
         return fileRepository.countByFileStatus(fileStatus);
+    }
+
+    @Override
+    public long countByCurrentUserIdNumber(String currentUserIdNumber) {
+        return fileRepository.countByCurrentUserIdNumber(currentUserIdNumber);
     }
 }

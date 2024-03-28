@@ -1,5 +1,6 @@
 package com.elijahwaswa.filetracker.controller.department;
 
+import com.elijahwaswa.filetracker.controller.setting.SettingController;
 import com.elijahwaswa.filetracker.dto.UserDto;
 import com.elijahwaswa.filetracker.exception.ex.ResourceNotFoundException;
 import com.elijahwaswa.filetracker.model.Department;
@@ -10,6 +11,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -25,6 +28,7 @@ public class DepartmentController {
     private DepartmentService departmentService;
     private HttpServletRequest request;
     private HttpServletResponse response;
+    private final Logger LOGGER  = LoggerFactory.getLogger(DepartmentController.class);
 
     @GetMapping
     public String departmentListPage(Model model) {
@@ -52,6 +56,7 @@ public class DepartmentController {
                         return row;
                     }).toList();
         } catch (Exception e) {
+            LOGGER.error(e.getMessage());
         }
 
         //return payload
@@ -95,6 +100,7 @@ public class DepartmentController {
                 departmentService.saveDepartment(department);
             }
         } catch (Exception e) {
+            LOGGER.error(e.getMessage());
         }
         return "redirect:/departments";
     }

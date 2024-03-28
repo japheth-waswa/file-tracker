@@ -11,6 +11,9 @@
     <c:if test="${allowDataTable ==true}">
         <link rel="stylesheet" href="/plugins/DataTables/datatables.min.css">
     </c:if>
+    <c:if test="${allowDatePicker ==true}">
+        <link rel="stylesheet" href="/plugins/DatePicker/bootstrap-datepicker.min.css">
+    </c:if>
     <link rel="stylesheet" href="/css/app.css">
 </head>
 <body class="text-bg-light">

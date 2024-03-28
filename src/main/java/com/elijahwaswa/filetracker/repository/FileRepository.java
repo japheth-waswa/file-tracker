@@ -14,9 +14,12 @@ import java.util.UUID;
 public interface FileRepository extends JpaRepository<File, String> {
     File findById(UUID id);
     File findByLrNo(String lrNo);
+    File findByLrNoAndCurrentUserIdNumber(String lrNo,String currentUserIdNumber);
     void deleteById(UUID id);
     Page<File> findAllByLrNo(String lrNo, Pageable pageable);
     Page<File> findAllByFileStatus(FileStatus fileStatus, Pageable pageable);
+    Page<File> findAllByCurrentUserIdNumber(String currentUserIdNumber, Pageable pageable);
     long countByLrNo(String lrNo);
     long countByFileStatus(FileStatus fileStatus);
+    long countByCurrentUserIdNumber(String currentUserIdNumber);
 }

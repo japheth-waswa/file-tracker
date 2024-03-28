@@ -10,5 +10,8 @@
 <c:if test="${allowDataTable ==true}">
     <script src="/plugins/DataTables/datatables.min.js"></script>
 </c:if>
+<c:if test="${allowDatePicker ==true}">
+    <script src="/plugins/DatePicker/bootstrap-datepicker.min.js"></script>
+</c:if>
 </body>
 </html>

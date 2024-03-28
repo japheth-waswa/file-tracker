@@ -10,6 +10,8 @@ import dev.samstevens.totp.qr.QrDataFactory;
 import dev.samstevens.totp.qr.QrGenerator;
 import dev.samstevens.totp.secret.SecretGenerator;
 import jakarta.servlet.http.HttpSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -24,7 +26,7 @@ import java.time.Instant;
 import java.util.Base64;
 
 @Controller
-public class TwoFactorAuthenticationController {
+public class TotpAuthController {
 
     private final HttpSession session;
     private final SecretGenerator secretGenerator;
@@ -32,12 +34,12 @@ public class TwoFactorAuthenticationController {
     private final QrGenerator qrGenerator;
     private final CodeVerifier codeVerifier;
     private final UserRepository userRepository;
-
+    private final Logger LOGGER  = LoggerFactory.getLogger(TotpAuthController.class);
 
     @Value("${spring.application.name}")
     private String appName;
 
-    public TwoFactorAuthenticationController(HttpSession session, SecretGenerator secretGenerator, QrDataFactory qrDataFactory, QrGenerator qrGenerator, CodeVerifier codeVerifier, UserRepository userRepository) {
+    public TotpAuthController(HttpSession session, SecretGenerator secretGenerator, QrDataFactory qrDataFactory, QrGenerator qrGenerator, CodeVerifier codeVerifier, UserRepository userRepository) {
         this.session = session;
         this.secretGenerator = secretGenerator;
         this.qrDataFactory = qrDataFactory;
@@ -72,6 +74,7 @@ public class TwoFactorAuthenticationController {
             model.addAttribute("qrCodeBase64", qrCodeBase64);
             model.addAttribute("twoFactorTotpRoute", Helpers.TWO_FACTOR_AUTHENTICATION_TOTP_URL);
         } catch (QrGenerationException e) {
+            LOGGER.error(e.getMessage());
             return "redirect:" + Helpers.LOGOUT_URL;
         }
 

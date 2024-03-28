@@ -19,6 +19,7 @@ public interface UserService {
     List<UserDto> fetchUsers(int pageNumber,int pageSize) throws ResourceNotFoundException;
     List<UserDto> fetchUsers(int pageNumber,int pageSize,String idNumber) throws ResourceNotFoundException;
     List<UserDto> fetchUsersByRole(int pageNumber, int pageSize, UserRole userRole) throws ResourceNotFoundException;
+    List<UserDto> fetchUsersByRoleAndAccountStatus(int pageNumber, int pageSize, UserRole userRole,AccountStatus accountStatus) throws ResourceNotFoundException;
     List<UserDto> fetchUsersByRight(int pageNumber, int pageSize, UserRight userRight) throws ResourceNotFoundException;
     List<UserDto> fetchUsersByAccountStatus(int pageNumber, int pageSize, AccountStatus accountStatus) throws ResourceNotFoundException;
     List<UserDto> fetchUsersByDepartment(int pageNumber, int pageSize,String department) throws ResourceNotFoundException;

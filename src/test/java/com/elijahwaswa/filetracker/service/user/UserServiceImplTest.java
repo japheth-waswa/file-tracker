@@ -332,4 +332,16 @@ class UserServiceImplTest {
         System.out.println(userDto);
         assertEquals(userDto2.getIdNumber(), userDto.getIdNumber());
     }
+
+    @Test
+    void fetchUsersByRoleAndAccountStatus() {
+        userService.saveUser(userDto1);
+        userService.saveUser(userDto2);
+        userService.saveUser(userDto3);
+        List<UserDto> users = userService.fetchUsersByRoleAndAccountStatus(0, 10, UserRole.SU,AccountStatus.ACTIVE);
+        System.out.println(users);
+        assertEquals(1, users.size());
+        assertEquals(userDto2.getIdNumber(), users.getFirst().getIdNumber());
+        assertThrows(ResourceNotFoundException.class,()->userService.fetchUsersByRoleAndAccountStatus(0, 10, UserRole.SU,AccountStatus.INACTIVE));
+    }
 }

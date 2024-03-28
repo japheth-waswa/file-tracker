@@ -26,9 +26,9 @@ import java.util.UUID;
 @Service
 @AllArgsConstructor
 public class UserServiceImpl implements UserService {
-    private  ModelMapper modelMapper;
+    private ModelMapper modelMapper;
     private PasswordEncoder passwordEncoder;
-    private  UserRepository userRepository;
+    private UserRepository userRepository;
     private DepartmentService departmentService;
 
     @Override
@@ -40,7 +40,8 @@ public class UserServiceImpl implements UserService {
                 Department department = departmentService.fetchDepartment(departmentId);
                 userDto.setDepartment(department.getName());
             }
-        } catch (Exception e) {}
+        } catch (Exception e) {
+        }
         //set default password
         User user = modelMapper.map(userDto, User.class);
         user.setPassword(passwordEncoder.encode(Helpers.USER_DEFAULT_PASSWORD));
@@ -62,10 +63,11 @@ public class UserServiceImpl implements UserService {
                 Department department = departmentService.fetchDepartment(departmentId);
                 userDto.setDepartment(department.getName());
             }
-        } catch (Exception e) {}
+        } catch (Exception e) {
+        }
 
         //if Helpers.SU_ADMIN_ID is being updated, then disable some fields from update.
-        if(user.getIdNumber().equalsIgnoreCase(Helpers.SU_ADMIN_ID)){
+        if (user.getIdNumber().equalsIgnoreCase(Helpers.SU_ADMIN_ID)) {
             userDto.setIdNumber(user.getIdNumber());
             userDto.setRoles(user.getRoles());
             userDto.setRights(user.getRights());
@@ -97,7 +99,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto fetchUserByResetPasswordToken(String resetPasswordToken) throws ResourceNotFoundException {
         User user = userRepository.findByResetPasswordToken(resetPasswordToken);
-        if (user == null) throw new ResourceNotFoundException("User with reset password token " + resetPasswordToken + " not found");
+        if (user == null)
+            throw new ResourceNotFoundException("User with reset password token " + resetPasswordToken + " not found");
         return modelMapper.map(user, UserDto.class);
     }
 
@@ -124,6 +127,13 @@ public class UserServiceImpl implements UserService {
     public List<UserDto> fetchUsersByRole(int pageNumber, int pageSize, UserRole userRole) {
         return Helpers.parsePageableRecordsToList(UserDto.class,
                 userRepository.findAllByRoles(userRole.name(), Helpers.buildPageable(pageNumber, pageSize, List.of(new Sort.Order(Sort.Direction.DESC, "createdAt")))),
+                "No users found");
+    }
+
+    @Override
+    public List<UserDto> fetchUsersByRoleAndAccountStatus(int pageNumber, int pageSize, UserRole userRole, AccountStatus accountStatus) throws ResourceNotFoundException {
+        return Helpers.parsePageableRecordsToList(UserDto.class,
+                userRepository.findAllByRolesAndAccountStatus(userRole.name(), accountStatus, Helpers.buildPageable(pageNumber, pageSize, List.of(new Sort.Order(Sort.Direction.DESC, "createdAt")))),
                 "No users found");
     }
 

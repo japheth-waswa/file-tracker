@@ -6,6 +6,8 @@ import com.elijahwaswa.filetracker.service.user.UserService;
 import com.elijahwaswa.filetracker.util.Helpers;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,6 +30,7 @@ public class RootAuthController {
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private final Logger LOGGER  = LoggerFactory.getLogger(RootAuthController.class);
 
     public RootAuthController(UserService userService, HttpServletRequest request, EmailService emailService, PasswordEncoder passwordEncoder) {
         this.userService = userService;
@@ -82,6 +85,7 @@ public class RootAuthController {
         try {
             userDto = userService.fetchUserByResetPasswordToken(token);
         } catch (Exception e) {
+            LOGGER.error(e.getMessage());
             return new UserToken(false, null);
         }
 

@@ -40,7 +40,7 @@ body {
     box-shadow: none;
 }
 
-.form-control,.form-select {
+.form-control,.form-select,.modal-content,.dropdown-menu {
     border-radius: 0;
     font-size: 11px;
 }

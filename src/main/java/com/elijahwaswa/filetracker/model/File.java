@@ -47,5 +47,6 @@ public class File {
         if(this.lrNo != null && !this.lrNo.isBlank())this.lrNo = this.lrNo.toLowerCase();
         if(this.irNo != null && !this.irNo.isBlank())this.irNo = this.irNo.toLowerCase();
         if(this.cfNo != null && !this.cfNo.isBlank())this.cfNo = this.cfNo.toLowerCase();
+        if(this.currentUserIdNumber != null && !this.currentUserIdNumber.isBlank())this.currentUserIdNumber = this.currentUserIdNumber.toLowerCase();
     }
 }

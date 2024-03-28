@@ -11,15 +11,41 @@
         <div class="card">
             <div class="card-body">
                 <p class="fs-14px fw-medium"><u>Files</u></p>
-                <c:if test="${manageAllowed == true}">
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="float-end">
-                                <a class="btn btn-sm btn-primary" href="/files/manage">Add New File</a>
+                <div class="row mb-2">
+                    <div class="col">
+                        <div class="float-start">
+                            <div class="row">
+                                <div class="col">
+                                    <select id="fileSearchFilter" class="form-control">
+                                        <c:forEach items="${fileSearchFilters}" var="fileSearchFilter">
+                                            <option value="${fileSearchFilter}">${fileSearchFilter}</option>
+                                        </c:forEach>
+                                    </select>
+                                </div>
+                                <div class="col">
+                                    <input type="text" id="filterSearchValue" class="form-control"
+                                           placeholder="Search">
+                                    <select id="fileStatus" class="form-control">
+                                        <c:forEach items="${fileStatuses}" var="fileStatus">
+                                            <option value="${fileStatus}">${fileStatus}</option>
+                                        </c:forEach>
+                                    </select>
+                                </div>
+                                <div class="col">
+                                    <button class="btn btn-sm btn-primary" onclick="table.ajax.reload();">Search</button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </c:if>
+                    <div class="col">
+                        <div class="float-end">
+                            <c:if test="${manageAllowed == true}">
+                                <a class="btn btn-sm btn-primary" href="/files/manage">Add New File</a>
+                            </c:if>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="row">
                     <div class="col-12 table-responsive">
                         <table id="myTable" class="table">
@@ -47,8 +73,14 @@
     <div class="col-1"></div>
 </div>
 <script>
+    let fileSearchFilter = document.getElementById("fileSearchFilter");
+    let filterSearchValue = document.getElementById("filterSearchValue");
+    let fileStatus = document.getElementById("fileStatus");
+
     let table;
     document.addEventListener('DOMContentLoaded', function () {
+        toggleSearchElems();
+
         table = $('#myTable').DataTable({
             "searchDelay": 1000,
             "processing": true, //Feature control the processing indicator.
@@ -59,6 +91,9 @@
                 "url": "/files",
                 "type": "POST",
                 "data": function (d) {
+                    d.fileSearchFilter = fileSearchFilter.value;
+                    d.fileStatuses = fileStatus.value;
+                    d.filterSearchValue = filterSearchValue.value;
                 },
                 "dataSrc": function (json) {
                     return json.data;
@@ -66,10 +101,26 @@
             },
             "deferRender": 100,
             "language": {
-                processing: '<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><p class="sr-ofnly">Loading...</p> '
+                processing: '<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><p class="sr-ofnly">Loading...</p>'
             },
             ordering: false
         });
     }, false);
+    fileSearchFilter.addEventListener("change", function () {
+        toggleSearchElems();
+    });
+
+    const toggleSearchElems = () => {
+        if (fileSearchFilter.value === "LR_NO") {
+            fileStatus.style.display = "none";
+            filterSearchValue.style.display = "block";
+        } else if (fileSearchFilter.value === "FILE_STATUS") {
+            filterSearchValue.style.display = "none";
+            fileStatus.style.display = "block";
+        } else if (fileSearchFilter.value === "ALL_FILES" || fileSearchFilter.value === "MY_FILES") {
+            filterSearchValue.style.display = "none";
+            fileStatus.style.display = "none";
+        }
+    };
 </script>
 <%@include file="../common/footer.jspf" %>
