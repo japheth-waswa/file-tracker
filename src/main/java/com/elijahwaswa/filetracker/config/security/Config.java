@@ -37,6 +37,8 @@ public class Config {
                             }
                             authorizeRequests
                                     .requestMatchers("/settings/**").hasAnyRole(UserRole.SU.name())
+                                    .requestMatchers("/users/reset-link").hasAnyRole(UserRole.SU.name())
+                                    .requestMatchers("/users/reset-totp").hasAnyRole(UserRole.SU.name(), UserRole.ADMIN.name(), UserRole.USER.name())
                                     .requestMatchers("/users/**").hasAnyRole(UserRole.SU.name(), UserRole.ADMIN.name())
                                     .requestMatchers("/departments/**").hasAnyRole(UserRole.SU.name(), UserRole.ADMIN.name())
                                     .requestMatchers("/files/delete").hasAnyRole(UserRole.SU.name())
@@ -47,15 +49,6 @@ public class Config {
                                     )
                                     .requestMatchers("/files/add-file_trail").hasAnyRole(UserRole.SU.name(), UserRole.ADMIN.name())
 //                                    .requestMatchers("/files/**").hasAnyRole(UserRole.SU.name(), UserRole.ADMIN.name(), UserRole.USER.name())
-
-                                    .requestMatchers("/hello/su").hasRole(UserRole.SU.name())
-                                    .requestMatchers("/hello/admin").hasRole(UserRole.ADMIN.name())
-                                    .requestMatchers("/hello/user").hasRole(UserRole.USER.name())
-                                    .requestMatchers("/hello/user-supervisor").access(
-                                            new WebExpressionAuthorizationManager(
-                                                    "hasRole(T(com.elijahwaswa.filetracker.util.UserRole).SU.name()) or (hasRole(T(com.elijahwaswa.filetracker.util.UserRole).USER.name()) and hasAuthority(T(com.elijahwaswa.filetracker.util.UserRight).SUPERVISOR.name()))"
-                                            )
-                                    )
                                     .anyRequest().authenticated();
                         }
                 )

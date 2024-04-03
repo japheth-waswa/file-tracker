@@ -8,35 +8,42 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item">
-                    <a class="nav-link" aria-current="page" href="/settings">Settings</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" aria-current="page" href="/departments">Departments</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/users">Users</a>
-                </li>
+                <c:if test="${isSu==true}">
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="/settings">Settings</a>
+                    </li>
+                </c:if>
+                <c:if test="${isAdmin==true}">
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="/departments">Departments</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/users">Users</a>
+                    </li>
+                </c:if>
                 <li class="nav-item">
                     <a class="nav-link" href="/files">Files</a>
                 </li>
-<%--                <li class="nav-item dropdown">--%>
-<%--                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"--%>
-<%--                       aria-expanded="false">--%>
-<%--                        Admin--%>
-<%--                    </a>--%>
-<%--                    <ul class="dropdown-menu">--%>
-<%--                        <li><a class="dropdown-item" href="/departments">Departments</a></li>--%>
-<%--                        <li><a class="dropdown-item" href="/users">Users</a></li>--%>
-<%--                        <li>--%>
-<%--                            <hr class="dropdown-divider">--%>
-<%--                        </li>--%>
-<%--                        <li><a class="dropdown-item" href="#">Something else here</a></li>--%>
-<%--                    </ul>--%>
-<%--                </li>--%>
-<%--                <li class="nav-item">--%>
-<%--                    <a class="nav-link disabled" aria-disabled="true">Disabled</a>--%>
-<%--                </li>--%>
+                <li class="nav-item">
+                    <a class="nav-link" href="/notifications">Notifications</a>
+                </li>
+                <%--                <li class="nav-item dropdown">--%>
+                <%--                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"--%>
+                <%--                       aria-expanded="false">--%>
+                <%--                        Admin--%>
+                <%--                    </a>--%>
+                <%--                    <ul class="dropdown-menu">--%>
+                <%--                        <li><a class="dropdown-item" href="/departments">Departments</a></li>--%>
+                <%--                        <li><a class="dropdown-item" href="/users">Users</a></li>--%>
+                <%--                        <li>--%>
+                <%--                            <hr class="dropdown-divider">--%>
+                <%--                        </li>--%>
+                <%--                        <li><a class="dropdown-item" href="#">Something else here</a></li>--%>
+                <%--                    </ul>--%>
+                <%--                </li>--%>
+                <%--                <li class="nav-item">--%>
+                <%--                    <a class="nav-link disabled" aria-disabled="true">Disabled</a>--%>
+                <%--                </li>--%>
             </ul>
             <div class="d-flex me-2">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
@@ -46,7 +53,8 @@
                             ${sessionScope.fullNames}
                         </a>
                         <ul class="dropdown-menu">
-<%--                            <li><a class="dropdown-item" href="#">Profile</a></li>--%>
+                            <%--                            <li><a class="dropdown-item" href="#">Profile</a></li>--%>
+                            <li><a class="dropdown-item" href="${pageContext.request.contextPath}/users/reset-totp">Reset 2FA</a></li>
                             <li><a class="dropdown-item" href="${pageContext.request.contextPath}/logout">Logout</a></li>
                         </ul>
                     </li>

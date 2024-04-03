@@ -3,6 +3,7 @@ package com.elijahwaswa.filetracker.service.file;
 import com.elijahwaswa.filetracker.dto.FileDto;
 import com.elijahwaswa.filetracker.dto.FileTrailDto;
 import com.elijahwaswa.filetracker.dto.SettingDto;
+import com.elijahwaswa.filetracker.event.ReminderEvent;
 import com.elijahwaswa.filetracker.exception.ex.ResourceNotFoundException;
 import com.elijahwaswa.filetracker.model.FileTrail;
 import com.elijahwaswa.filetracker.repository.FileTrailRepository;
@@ -11,6 +12,8 @@ import com.elijahwaswa.filetracker.util.DurationType;
 import com.elijahwaswa.filetracker.util.Helpers;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -24,7 +27,9 @@ import java.util.List;
 public class FileTrailServiceImpl implements FileTrailService {
     private ModelMapper modelMapper;
     private FileTrailRepository fileTrailRepository;
+    private FileService fileService;
     private SettingService settingService;
+    private final Logger LOGGER = LoggerFactory.getLogger(FileTrailServiceImpl.class);
 
     @Override
     public FileTrailDto saveFileTrail(FileTrailDto fileTrailDto) {
@@ -92,10 +97,43 @@ public class FileTrailServiceImpl implements FileTrailService {
         return fileTrailDto;
     }
 
+    @Override
+    public boolean shouldRemind(ReminderEvent reminderEvent) {
+        FileTrailDto fileTrail;
+        try{
+            List<FileTrailDto> fetchFileTrails = fetchFileTrails(0, 1, reminderEvent.getLrNo());
+            fileTrail = fetchFileTrails.getFirst();
+        }catch(Exception e){
+            LOGGER.error(e.getMessage());
+            return false;
+        }
+
+        //moved from this account
+        if(!fileTrail.getId().equals(reminderEvent.getFileTrailId())){
+            return false;
+        }
+
+        //fetch the file
+        FileDto file;
+        try{
+            file = fileService.fetchFile(reminderEvent.getLrNo());
+        }catch(Exception e){
+            LOGGER.error(e.getMessage());
+            return false;
+        }
+
+        //check if user and department match
+        if(!reminderEvent.getAssignedToIdNumber().equalsIgnoreCase(file.getCurrentUserIdNumber()) || !reminderEvent.getDepartment().equalsIgnoreCase(file.getCurrentDepartment())){
+            return false;
+        }
+
+        //user and department successfully match
+        return true;
+    }
+
     private LocalDateTime computeDueDateUsingSetting(SettingDto setting) {
         long duration = setting.getDuration();
         DurationType durationType = setting.getDurationType();
         return Helpers.computeDueDateUsingSetting(LocalDateTime.now(), duration != 0 ? duration : Helpers.REMINDER_DURATION, durationType != null ? durationType : Helpers.DURATION_TYPE);
     }
-
 }

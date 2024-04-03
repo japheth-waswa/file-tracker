@@ -14,6 +14,8 @@ import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -33,6 +35,10 @@ public class DepartmentController {
     @GetMapping
     public String departmentListPage(Model model) {
         model.addAttribute("allowDataTable", true);
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Helpers.setViewModelAttrs(authentication,model);
+
         return "department/list";
     }
 
@@ -75,6 +81,10 @@ public class DepartmentController {
     private String manageDepartment(Model model, boolean resetDepartment, Department customDepartment) {
         if (resetDepartment && customDepartment == null) model.addAttribute("department", new Department());
         if (customDepartment != null) model.addAttribute("department", customDepartment);
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Helpers.setViewModelAttrs(authentication,model);
+
         return "department/manage";
     }
 

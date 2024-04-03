@@ -27,7 +27,7 @@ public class FileServiceImpl implements FileService {
     private FileRepository fileRepository;
 
     @Override
-    public FileDto saveFile(FileDto fileDto, String idNumber, String fullNames, String department) {
+    public synchronized FileDto saveFile(FileDto fileDto, String idNumber, String fullNames, String department) {
         fileDto.setCurrentUserIdNumber(idNumber);
         fileDto.setCurrentUserFullNames(fullNames);
         fileDto.setCurrentDepartment(department);

@@ -1,6 +1,7 @@
 package com.elijahwaswa.filetracker.model;
 
-import com.elijahwaswa.filetracker.util.DurationType;
+import com.elijahwaswa.filetracker.util.FileNature;
+import com.elijahwaswa.filetracker.util.FileStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.DynamicUpdate;
@@ -13,15 +14,15 @@ import java.util.UUID;
 
 @Entity
 @Data
-@Table(name = "settings", indexes = {
+@Table(name = "notifications", indexes = {
         @Index(name = "idx_id", columnList = "id"),
         @Index(name = "idx_createdAt", columnList = "createdAt"),
-        @Index(name = "idx_durationType", columnList = "durationType"),
-        @Index(name = "idx_duration", columnList = "duration"),
+        @Index(name = "idx_idNumber", columnList = "idNumber"),
+        @Index(name = "idx_message", columnList = "message"),
 })
 @EntityListeners(AuditingEntityListener.class)
 @DynamicUpdate
-public class Setting {
+public class Notification {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -32,6 +33,12 @@ public class Setting {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
-    private DurationType durationType;
-    private long duration;
+    private String idNumber;
+    private String message;
+
+    @PrePersist
+    @PreUpdate
+    public void toLowerCase(){
+        if(this.idNumber != null && !this.idNumber.isBlank())this.idNumber = this.idNumber.toLowerCase();
+    }
 }

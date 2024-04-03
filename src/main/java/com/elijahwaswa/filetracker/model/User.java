@@ -17,7 +17,23 @@ import java.util.UUID;
 
 @Entity
 @Data
-@Table(name = "users")
+@Table(name = "users", indexes = {
+        @Index(name = "idx_id", columnList = "id"),
+        @Index(name = "idx_createdAt", columnList = "createdAt"),
+        @Index(name = "idx_password", columnList = "password"),
+        @Index(name = "idx_roles", columnList = "roles"),
+        @Index(name = "idx_rights", columnList = "rights"),
+        @Index(name = "idx_departmentId", columnList = "departmentId"),
+        @Index(name = "idx_department", columnList = "department"),
+        @Index(name = "idx_accountStatus", columnList = "accountStatus"),
+        @Index(name = "idx_firstName", columnList = "firstName"),
+        @Index(name = "idx_middleName", columnList = "middleName"),
+        @Index(name = "idx_otherNames", columnList = "otherNames"),
+        @Index(name = "idx_resetPasswordExpiryTime", columnList = "resetPasswordExpiryTime"),
+        @Index(name = "idx_resetPasswordToken", columnList = "resetPasswordToken"),
+        @Index(name = "idx_twoFactorSecret", columnList = "twoFactorSecret"),
+        @Index(name = "idx_twoFactorSecretExpiryTime", columnList = "twoFactorSecretExpiryTime"),
+})
 @EntityListeners(AuditingEntityListener.class)
 @DynamicUpdate
 public class User {

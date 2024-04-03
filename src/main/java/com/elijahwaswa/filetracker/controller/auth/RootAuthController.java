@@ -4,12 +4,15 @@ import com.elijahwaswa.filetracker.dto.UserDto;
 import com.elijahwaswa.filetracker.service.EmailService;
 import com.elijahwaswa.filetracker.service.user.UserService;
 import com.elijahwaswa.filetracker.util.Helpers;
+import com.elijahwaswa.filetracker.util.ResetLinkPayload;
+import com.elijahwaswa.filetracker.util.TwoFactorPayload;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -30,7 +33,10 @@ public class RootAuthController {
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
-    private final Logger LOGGER  = LoggerFactory.getLogger(RootAuthController.class);
+    private final Logger LOGGER = LoggerFactory.getLogger(RootAuthController.class);
+
+    @Value("${spring.application.name}")
+    private String appName;
 
     public RootAuthController(UserService userService, HttpServletRequest request, EmailService emailService, PasswordEncoder passwordEncoder) {
         this.userService = userService;
@@ -53,28 +59,21 @@ public class RootAuthController {
     public String resetPassword(@RequestParam String idNumber) {
         if (idNumber == null || idNumber.isBlank()) return "redirect:" + Helpers.RESET_PASSWORD_URL + "?error=true";
 
-        //fetch user by id number
         UserDto userDto;
+        String  resetLink;
         try {
-            userDto = userService.fetchUser(idNumber);
+            ResetLinkPayload resetLinkPayload = userService.generatePasswordResetLink(idNumber, Helpers.generateBaseUrl(request));
+            userDto = resetLinkPayload.userDto();
+            resetLink = resetLinkPayload.resetLink();
         } catch (Exception e) {
+            LOGGER.error(e.getMessage());
             return "redirect:" + Helpers.RESET_PASSWORD_URL + "?error=true";
         }
 
-        //resetPasswordExpiryTime
-        Instant resetPasswordExpiryTime = Instant.now().plus(Duration.ofMinutes(Helpers.RESET_PASSWORD_EXPIRY_MINUTES));
-
-        //resetPasswordToken
-        String resetPasswordToken = UUID.randomUUID().toString().replaceAll("-", "") + UUID.randomUUID().toString().replaceAll("-", "");
-        String resetLink = Helpers.generateBaseUrl(request) + Helpers.NEW_PASSWORD_URL + "?token=" + resetPasswordToken;
-
         //email service in new thread to send email with reset link
-        executorService.execute(() -> emailService.sendSimpleMessage(userDto.getEmail(), "Reset Password", "Click on the link to reset your password: " + resetLink));
+        UserDto finalUserDto = userDto;
+        executorService.execute(() -> emailService.sendSimpleMessage(finalUserDto.getEmail(), "Reset Password", "Click on the link to reset your password: " + resetLink));
 
-        //update user
-        userDto.setResetPasswordExpiryTime(resetPasswordExpiryTime);
-        userDto.setResetPasswordToken(resetPasswordToken);
-        userService.updateUser(userDto);
         return "redirect:" + Helpers.RESET_PASSWORD_URL + "?success=true";
     }
 
@@ -99,9 +98,19 @@ public class RootAuthController {
     }
 
     @GetMapping(Helpers.NEW_PASSWORD_URL)
-    public String newPasswordPage(@RequestParam String token) {
+    public String newPasswordPage(Model model, @RequestParam String token) {
         //ensure token is valid
-        if (!validateUserToken(token).status()) return "redirect:" + Helpers.LOGIN_URL;
+        UserToken userToken = validateUserToken(token);
+        if (!userToken.status()) return "redirect:" + Helpers.LOGIN_URL;
+
+        try {
+            TwoFactorPayload twoFactorPayload = userService.generateToTpQRCodeBase64Encoded(userToken.userDto().getIdNumber(), appName);
+            model.addAttribute("qrCodeBase64", twoFactorPayload.qrCodeBase64());
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage());
+            return "redirect:" + Helpers.LOGOUT_URL;
+        }
+
         return Helpers.NEW_PASSWORD_PAGE_VIEW;
     }
 

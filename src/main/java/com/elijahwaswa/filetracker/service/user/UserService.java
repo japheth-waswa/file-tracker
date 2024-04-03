@@ -1,11 +1,9 @@
 package com.elijahwaswa.filetracker.service.user;
 
 import com.elijahwaswa.filetracker.dto.UserDto;
+import com.elijahwaswa.filetracker.exception.ex.InternalException;
 import com.elijahwaswa.filetracker.exception.ex.ResourceNotFoundException;
-import com.elijahwaswa.filetracker.util.AccountStatus;
-import com.elijahwaswa.filetracker.util.UserRight;
-import com.elijahwaswa.filetracker.util.UserRole;
-import org.springframework.data.jpa.repository.Query;
+import com.elijahwaswa.filetracker.util.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -25,6 +23,9 @@ public interface UserService {
     List<UserDto> fetchUsersByDepartment(int pageNumber, int pageSize,String department) throws ResourceNotFoundException;
     List<UserDto> fetchUsersByNames(int pageNumber, int pageSize,String name) throws ResourceNotFoundException;
     void updateUsersDepartment(UUID departmentId,String departmentName);
+    ResetLinkPayload generatePasswordResetLink(String idNumber, String baseURL) throws InternalException, ResourceNotFoundException;
+    TwoFactorPayload generateToTpQRCodeBase64Encoded(String idNumber, String appName) throws InternalException, ResourceNotFoundException;
+    boolean resetTOTPSecret(String idNumber) throws InternalException, ResourceNotFoundException;
     boolean deleteUser(UUID id);
     long count();
     long countByIdNumber(String idNumber);

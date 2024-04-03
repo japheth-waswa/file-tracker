@@ -37,7 +37,6 @@ public class ReminderProducer {
             message.getMessageProperties().setDelayLong(delayInMilliseconds);//set delay in milliseconds
             return message;
         };
-
         rabbitTemplate.convertAndSend(exchange, reminderRoutingKey, remainderEvent, messagePostProcessor);
     }
 }

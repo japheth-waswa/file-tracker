@@ -4,11 +4,14 @@ import com.elijahwaswa.filetracker.model.Department;
 import com.elijahwaswa.filetracker.model.User;
 import com.elijahwaswa.filetracker.repository.DepartmentRepository;
 import com.elijahwaswa.filetracker.repository.UserRepository;
+import com.elijahwaswa.filetracker.service.FileFakerService;
 import com.elijahwaswa.filetracker.util.AccountStatus;
 import com.elijahwaswa.filetracker.util.Helpers;
 import com.elijahwaswa.filetracker.util.UserRight;
 import com.elijahwaswa.filetracker.util.UserRole;
 import lombok.AllArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -24,8 +27,11 @@ public class InitExecutor implements CommandLineRunner {
     private PasswordEncoder passwordEncoder;
     private UserRepository userRepository;
     private DepartmentRepository deparmentRepository;
+    private FileFakerService fileFakerService;
+
     private final String SU_ROLES = Arrays.stream(UserRole.values()).map(UserRole::name).collect(Collectors.joining(","));
     private final String SU_RIGHTS = Arrays.stream(UserRight.values()).map(UserRight::name).collect(Collectors.joining(","));
+    private final Logger LOGGER = LoggerFactory.getLogger(InitExecutor.class);
 
     @Override
     public void run(String... args) throws Exception {
@@ -47,7 +53,9 @@ public class InitExecutor implements CommandLineRunner {
                 user.setEmail("royalportersltd@gmail.com");
                 userRepository.save(user);
             }
-        }catch(Exception e){}
+        }catch(Exception e){
+            LOGGER.error(e.getMessage());
+        }
 
         try{
             //create default department
@@ -57,6 +65,15 @@ public class InitExecutor implements CommandLineRunner {
                 defaultDepartment.setName(Helpers.DEFAULT_DEPARTMENT_NAME);
                 deparmentRepository.save(defaultDepartment);
             }
-        }catch(Exception e){}
+        }catch(Exception e){
+            LOGGER.error(e.getMessage());
+        }
+
+//        try{
+//            //create fake records
+//            fileFakerService.generateFakeFiles();
+//        }catch(Exception e){
+//            LOGGER.error(e.getMessage());
+//        }
     }
 }

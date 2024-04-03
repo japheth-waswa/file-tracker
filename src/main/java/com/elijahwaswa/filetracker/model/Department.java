@@ -13,7 +13,11 @@ import java.util.UUID;
 
 @Data
 @Entity
-@Table(name="departments")
+@Table(name="departments", indexes = {
+        @Index(name = "idx_id", columnList = "id"),
+        @Index(name = "idx_createdAt", columnList = "createdAt"),
+        @Index(name = "idx_name", columnList = "name"),
+})
 @EntityListeners(AuditingEntityListener.class)
 @DynamicUpdate
 public class Department {

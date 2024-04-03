@@ -121,5 +121,91 @@
             // ],
         });
     }, false);
+
+    const generateResetLink = (elem) => {
+        const href = elem.getAttribute("data-href");
+        const resetErrorId = elem.getAttribute("reset-error-id");
+        const resetSuccessId = elem.getAttribute("reset-success-id");
+        const resetUrlId = elem.getAttribute("reset-url-id");
+        const resetSpinnerId = elem.getAttribute("reset-spinner-id");
+        const resetSpinnerElem = document.getElementById(resetSpinnerId);
+        if(resetSpinnerElem != null)resetSpinnerElem.style.display = "inline-block";
+
+        fetch(href, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({})
+        })
+            .then(response => response.json())
+            .then(data => {
+                if(resetSpinnerElem != null)resetSpinnerElem.style.display = "none";
+
+                const resetLink = data.resetLink;
+                const status = data.status;
+                const message = data.message;
+                if (status === "200") {
+                    displayMessage({
+                        resetErrorId,
+                        resetSuccessId,
+                        resetUrlId,
+                        success: true,
+                        message: "Successfully generated reset link",
+                        resetLink
+                    });
+                } else {
+                    displayMessage({
+                        resetErrorId,
+                        resetSuccessId,
+                        resetUrlId,
+                        success: false,
+                        message:"Unable to generate reset link"
+                    });
+                }
+            }).catch(error => {
+            if(resetSpinnerElem != null)resetSpinnerElem.style.display = "none";
+
+            displayMessage({
+                resetErrorId,
+                resetSuccessId,
+                resetUrlId,
+                success: false,
+                message: "An error occurred!"
+            });
+        });
+    }
+
+    const displayMessage = ({
+                                resetErrorId,
+                                resetSuccessId,
+                                resetUrlId,
+                                success = false,
+                                message = null,
+                                resetLink = null,
+                            }) => {
+        const resetErrorElem = document.getElementById(resetErrorId);
+        const resetSuccessElem = document.getElementById(resetSuccessId);
+        const resetUrlElem = document.getElementById(resetUrlId);
+        if (success) {
+            if (resetErrorElem !== null) resetErrorElem.style.display = "none";
+            // if (resetSuccessElem !== null) {
+            //     resetSuccessElem.style.display = "block";
+            //     if (message !== null) resetSuccessElem.innerHTML = "<p>" + message + "</p>";
+            // }
+            if (resetUrlElem !== null && resetLink !== null) {
+                resetUrlElem.style.display = "block";
+                resetUrlElem.innerText = resetLink;
+            }
+        } else {
+            if (resetSuccessElem !== null) resetSuccessElem.style.display = "none";
+            if (resetUrlElem !== null) resetUrlElem.style.display = "none";
+            if (resetErrorElem !== null) {
+                resetErrorElem.style.display = "block";
+                if (message !== null) resetErrorElem.innerHTML = "<p>" + message + "</p>";
+            }
+        }
+    }
+
 </script>
 <%@include file="../common/footer.jspf" %>

@@ -5,10 +5,7 @@ import com.elijahwaswa.filetracker.dto.UserDto;
 import com.elijahwaswa.filetracker.model.Department;
 import com.elijahwaswa.filetracker.service.department.DepartmentService;
 import com.elijahwaswa.filetracker.service.user.UserService;
-import com.elijahwaswa.filetracker.util.AccountStatus;
-import com.elijahwaswa.filetracker.util.Helpers;
-import com.elijahwaswa.filetracker.util.UserRight;
-import com.elijahwaswa.filetracker.util.UserRole;
+import com.elijahwaswa.filetracker.util.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -16,12 +13,16 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
+
+import static com.elijahwaswa.filetracker.util.Helpers.parseAuthenticatedRoles;
 
 @Controller
 @RequestMapping("users")
@@ -31,21 +32,27 @@ public class UserController {
     private DepartmentService departmentService;
     private HttpServletRequest request;
     private HttpServletResponse response;
-    private final Logger LOGGER  = LoggerFactory.getLogger(UserController.class);
+    private final Logger LOGGER = LoggerFactory.getLogger(UserController.class);
 
     @GetMapping
     public String users(Model model) {
         model.addAttribute("allowDataTable", true);
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Helpers.setViewModelAttrs(authentication, model);
+
         return "user/list";
     }
 
     @PostMapping
     @ResponseBody
     public Map<String, Object> usersList(Model model, HttpSession session, @RequestParam(required = false) String draw, @RequestParam(required = false) int length, @RequestParam(required = false) int start, @RequestParam(required = false, name = "search[value]") String searchValue) {
-        //todo fetch the uses list with Pageable,filter(idNumber,roles,rights,department,accountStatus,names)
 
         List<List<String>> data = null;
         List<UserDto> users = null;
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Set<UserRole> roles = parseAuthenticatedRoles(authentication);
+        boolean isSu = roles.contains(UserRole.SU);
 
         try {
             //fetch & count users
@@ -61,6 +68,7 @@ public class UserController {
                         String fullNames = user.getFirstName() + " " + user.getMiddleName() + " " + user.getOtherNames();
                         variables.put("user", user);
                         variables.put("fullNames", fullNames);
+                        variables.put("isSu", isSu);
 
                         List<String> userRow = new ArrayList<>();
                         userRow.add(user.getIdNumber());
@@ -81,7 +89,7 @@ public class UserController {
         Map<String, Object> payload = new HashMap<>();
         payload.put("draw", draw);
         payload.put("data", data);
-        payload.put("recordsTotal", users != null ?users.size():0);
+        payload.put("recordsTotal", users != null ? users.size() : 0);
         payload.put("recordsFiltered", userService.count());
 
         return payload;
@@ -98,11 +106,14 @@ public class UserController {
         model.addAttribute("userRoles", UserRole.values());
         model.addAttribute("userRights", UserRight.values());
         model.addAttribute("accountStatuses", AccountStatus.values());
-        try{
-            model.addAttribute("departments", departmentService.fetchDepartments(0,500));
-        }catch(Exception e){
+        try {
+            model.addAttribute("departments", departmentService.fetchDepartments(0, 500));
+        } catch (Exception e) {
             LOGGER.error(e.getMessage());
         }
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Helpers.setViewModelAttrs(authentication, model);
 
         return "user/manage";
     }
@@ -128,6 +139,44 @@ public class UserController {
             userService.saveUser(userDto);
         }
         return "redirect:/users";
+    }
+
+    @PostMapping("reset-link")
+    @ResponseBody
+    public Map<String, String> generateResetLink(@RequestParam String idNumber) {
+        Map<String, String> data = new HashMap<>();
+
+        if (idNumber == null || idNumber.isBlank()) {
+            data.put("status", "403");
+            data.put("message", "idNumber must be provided!");
+            return data;
+        }
+
+        ResetLinkPayload resetLinkPayload;
+        try {
+            resetLinkPayload = userService.generatePasswordResetLink(idNumber, Helpers.generateBaseUrl(request));
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage());
+            data.put("status", "403");
+            data.put("message", "Internal error occurred");
+            return data;
+        }
+
+        data.put("status", "200");
+        data.put("message", "successful");
+        data.put("resetLink", resetLinkPayload.resetLink());
+        return data;
+    }
+
+    @GetMapping("reset-totp")
+    public String resetTOTP() {
+        try {
+            String idNumber = Helpers.getLoggedInUsername();
+            userService.resetTOTPSecret(idNumber);
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage());
+        }
+        return "redirect:" + Helpers.AUTHENTICATED_ROOT_URL;
     }
 
     @GetMapping("delete")

@@ -2,7 +2,9 @@ package com.elijahwaswa.filetracker.controller.auth;
 
 import com.elijahwaswa.filetracker.model.User;
 import com.elijahwaswa.filetracker.repository.UserRepository;
+import com.elijahwaswa.filetracker.service.user.UserService;
 import com.elijahwaswa.filetracker.util.Helpers;
+import com.elijahwaswa.filetracker.util.TwoFactorPayload;
 import dev.samstevens.totp.code.CodeVerifier;
 import dev.samstevens.totp.exceptions.QrGenerationException;
 import dev.samstevens.totp.qr.QrData;
@@ -34,50 +36,38 @@ public class TotpAuthController {
     private final QrGenerator qrGenerator;
     private final CodeVerifier codeVerifier;
     private final UserRepository userRepository;
-    private final Logger LOGGER  = LoggerFactory.getLogger(TotpAuthController.class);
+    private final UserService userService;
+    private final Logger LOGGER = LoggerFactory.getLogger(TotpAuthController.class);
 
     @Value("${spring.application.name}")
     private String appName;
 
-    public TotpAuthController(HttpSession session, SecretGenerator secretGenerator, QrDataFactory qrDataFactory, QrGenerator qrGenerator, CodeVerifier codeVerifier, UserRepository userRepository) {
+    public TotpAuthController(HttpSession session, SecretGenerator secretGenerator, QrDataFactory qrDataFactory, QrGenerator qrGenerator, CodeVerifier codeVerifier, UserRepository userRepository, UserService userService) {
         this.session = session;
         this.secretGenerator = secretGenerator;
         this.qrDataFactory = qrDataFactory;
         this.qrGenerator = qrGenerator;
         this.codeVerifier = codeVerifier;
         this.userRepository = userRepository;
+        this.userService = userService;
     }
 
     @GetMapping(Helpers.TWO_FACTOR_AUTHENTICATION_TOTP_URL)
     public String showSetup2FA(Model model) {
-        //get user record
-        TwoFactorUserDetails twoFactorUserDetails = getTwoFactorUserDetails();
-        if (twoFactorUserDetails == null) return "redirect:" + Helpers.LOGOUT_URL;
-
-        //re-use secret if it exists
-        String dbSecret = twoFactorUserDetails.user().getTwoFactorSecret();
-        String secret = dbSecret != null ? dbSecret : secretGenerator.generate();
-        QrData data = qrDataFactory.newBuilder()
-                .label(appName + ":" + twoFactorUserDetails.username())
-                .secret(secret)
-                .issuer(appName)
-                .build();
-
-
-        twoFactorUserDetails.user().setTwoFactorSecret(secret);
-        twoFactorUserDetails.user().setTwoFactorSecretExpiryTime(Instant.now());
-        userRepository.save(twoFactorUserDetails.user());
-
+        TwoFactorPayload twoFactorPayload;
         try {
-            byte[] qrCode = qrGenerator.generate(data);
-            String qrCodeBase64 = Base64.getEncoder().encodeToString(qrCode);
-            model.addAttribute("qrCodeBase64", qrCodeBase64);
-            model.addAttribute("twoFactorTotpRoute", Helpers.TWO_FACTOR_AUTHENTICATION_TOTP_URL);
-        } catch (QrGenerationException e) {
+            String username = Helpers.getLoggedInUsername();
+            twoFactorPayload = userService.generateToTpQRCodeBase64Encoded(username, appName);
+            if (!twoFactorPayload.dbSecretExists()) {
+                //show QrCode if secret does not exist
+                model.addAttribute("qrCodeBase64", twoFactorPayload.qrCodeBase64());
+            }
+        } catch (Exception e) {
             LOGGER.error(e.getMessage());
             return "redirect:" + Helpers.LOGOUT_URL;
         }
 
+        model.addAttribute("twoFactorTotpRoute", Helpers.TWO_FACTOR_AUTHENTICATION_TOTP_URL);
         model.addAttribute("topNavAllowed", false);
         model.addAttribute("sideNavAllowed", false);
         return "auth/2fa-qr";
@@ -86,22 +76,22 @@ public class TotpAuthController {
     @PostMapping(Helpers.TWO_FACTOR_AUTHENTICATION_TOTP_URL)
     public String verify2FA(@RequestParam String code) {
         //get user record
-        TwoFactorUserDetails twoFactorUserDetails = getTwoFactorUserDetails();
-        if (twoFactorUserDetails == null) return "redirect:" + Helpers.LOGOUT_URL;
+        TwoFactorPayload twoFactorPayload = getTwoFactorUserDetails();
+        if (twoFactorPayload == null) return "redirect:" + Helpers.LOGOUT_URL;
 
         //check if the code has been used
-        if (twoFactorUserDetails.user.getUsedTotpCodes().contains(code)) {
+        if (twoFactorPayload.user().getUsedTotpCodes().contains(code)) {
             return "redirect:" + Helpers.TWO_FACTOR_AUTHENTICATION_TOTP_URL + "?error=code-used";
         }
 
         //check if the secret has expired
         Instant now = Instant.now();
-        Instant secretCreationTime = twoFactorUserDetails.user.getTwoFactorSecretExpiryTime();
+        Instant secretCreationTime = twoFactorPayload.user().getTwoFactorSecretExpiryTime();
         if (secretCreationTime.plus(Duration.ofMinutes(Helpers.OTP_EXPIRY_MINUTES)).isBefore(now)) {
             return "redirect:" + Helpers.TWO_FACTOR_AUTHENTICATION_TOTP_URL + "?error=expired";
         }
 
-        String secret  = twoFactorUserDetails.user.getTwoFactorSecret();
+        String secret = twoFactorPayload.user().getTwoFactorSecret();
         //check if code is valid
         if (!codeVerifier.isValidCode(secret, code))
             return "redirect:" + Helpers.TWO_FACTOR_AUTHENTICATION_TOTP_URL + "?error=invalid-code";
@@ -110,24 +100,17 @@ public class TotpAuthController {
         session.setAttribute(Helpers.TWO_FACTOR_BOOL_FLAG, true);
 
         //code is valid
-        twoFactorUserDetails.user.getUsedTotpCodes().add(code);
-        userRepository.save(twoFactorUserDetails.user);
+        twoFactorPayload.user().getUsedTotpCodes().add(code);
+        userRepository.save(twoFactorPayload.user());
         return "redirect:" + Helpers.AUTHENTICATED_ROOT_URL;
     }
 
-    private TwoFactorUserDetails getTwoFactorUserDetails() {
-        String username = null;
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (principal instanceof UserDetails userDetails) username = userDetails.getUsername();
-
+    private TwoFactorPayload getTwoFactorUserDetails() {
+        String username = Helpers.getLoggedInUsername();
         User user = userRepository.findByIdNumber(username);
         if (user == null) {
             return null;
         }
-        return new TwoFactorUserDetails(username, user);
+        return new TwoFactorPayload(username, user, null,false);
     }
-
-    private record TwoFactorUserDetails(String username, User user) {
-    }
-
 }

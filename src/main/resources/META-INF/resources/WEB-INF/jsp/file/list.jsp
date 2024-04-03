@@ -51,6 +51,7 @@
                         <table id="myTable" class="table">
                             <thead>
                             <tr>
+                                <th>#</th>
                                 <th>LR No</th>
                                 <th>IR No</th>
                                 <th>CF No</th>

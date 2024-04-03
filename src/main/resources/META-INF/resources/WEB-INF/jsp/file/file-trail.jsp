@@ -23,6 +23,7 @@
         <table id="myTable" class="table">
             <thead>
             <tr>
+                <th>#</th>
                 <th>Assigned To</th>
                 <th>Assigned On</th>
                 <th>Department</th>
@@ -152,9 +153,6 @@
     document.addEventListener('DOMContentLoaded', function () {
 
         $('.datepicker').datepicker({
-            // format: 'yyyy-mm-dd 00:00:00:00.000000',
-            // format: 'yyyy-mm-dd',
-            // format: 'yyyy-mm-ddT00:00:00',
             format: 'yyyy-mm-dd 00:00:00',
         });
 

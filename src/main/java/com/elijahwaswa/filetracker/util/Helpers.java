@@ -12,6 +12,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.ui.Model;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -32,7 +35,7 @@ public final class Helpers {
     public static final String LOGOUT_URL = "/logout";
     public static final String RESET_PASSWORD_URL = "/reset-password";
     public static final String NEW_PASSWORD_URL = "/new-password";
-    public static final String AUTHENTICATED_ROOT_URL = "/dashboard";
+    public static final String AUTHENTICATED_ROOT_URL = "/files";
     public static final String TWO_FACTOR_AUTHENTICATION_URL = "/2fa";
     public static final String TWO_FACTOR_BOOL_FLAG = "validTwoFactor";
     public static final String TWO_FACTOR_AUTHENTICATION_TOTP_URL = "/2fa-totp";
@@ -114,6 +117,15 @@ public final class Helpers {
         return rights.stream().filter(right -> !right.contains(ROLE_PREPEND)).map(UserRight::valueOf).collect(Collectors.toSet());
     }
 
+    public static void setViewModelAttrs(Authentication authentication,Model model){
+        if(authentication == null)return;
+
+        Set<UserRole> roles = parseAuthenticatedRoles(authentication);
+        if(roles.contains(UserRole.SU))model.addAttribute("isSu",true);
+        if(roles.contains(UserRole.ADMIN))model.addAttribute("isAdmin",true);
+        if(roles.contains(UserRole.USER))model.addAttribute("isUser",true);
+    }
+
     public static long timeDifference(ChronoUnit chronoUnit, LocalDateTime from, LocalDateTime to) {
         return chronoUnit.between(from, to);
     }
@@ -177,5 +189,12 @@ public final class Helpers {
         } else {
             return dueDate;
         }
+    }
+
+    public static String getLoggedInUsername(){
+        String username = null;
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof UserDetails userDetails) username = userDetails.getUsername();
+        return username;
     }
 }

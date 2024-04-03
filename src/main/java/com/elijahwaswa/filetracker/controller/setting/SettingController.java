@@ -4,14 +4,13 @@ import com.elijahwaswa.filetracker.controller.user.UserController;
 import com.elijahwaswa.filetracker.dto.SettingDto;
 import com.elijahwaswa.filetracker.dto.UserDto;
 import com.elijahwaswa.filetracker.service.setting.SettingService;
-import com.elijahwaswa.filetracker.util.AccountStatus;
-import com.elijahwaswa.filetracker.util.DurationType;
-import com.elijahwaswa.filetracker.util.UserRight;
-import com.elijahwaswa.filetracker.util.UserRole;
+import com.elijahwaswa.filetracker.util.*;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -39,6 +38,10 @@ public class SettingController {
         if (customSettingDto != null) model.addAttribute("settingDto", customSettingDto);
 
         model.addAttribute("durationTypes", DurationType.values());
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Helpers.setViewModelAttrs(authentication,model);
+
         return "setting/manage";
     }
 

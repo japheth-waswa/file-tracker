@@ -13,7 +13,25 @@ import java.util.UUID;
 
 @Entity
 @Data
-@Table(name = "file_trails")
+@Table(name = "file_trails", indexes = {
+        @Index(name = "idx_id", columnList = "id"),
+        @Index(name = "idx_createdAt", columnList = "createdAt"),
+        @Index(name = "idx_assignedOn", columnList = "assignedOn"),
+        @Index(name = "idx_dispatchedOn", columnList = "dispatchedOn"),
+        @Index(name = "idx_lrNo", columnList = "lrNo"),
+        @Index(name = "idx_assignedToIdNumber", columnList = "assignedToIdNumber"),
+        @Index(name = "idx_assignedToFullNames", columnList = "assignedToFullNames"),
+        @Index(name = "idx_assignedByIdNumber", columnList = "assignedByIdNumber"),
+        @Index(name = "idx_assignedByFullNames", columnList = "assignedByFullNames"),
+        @Index(name = "idx_dispatchedByIdNumber", columnList = "dispatchedByIdNumber"),
+        @Index(name = "idx_dispatchedByFullNames", columnList = "dispatchedByFullNames"),
+        @Index(name = "idx_timeTakenInSeconds", columnList = "timeTakenInSeconds"),
+        @Index(name = "idx_department", columnList = "department"),
+        @Index(name = "idx_dispatchNote", columnList = "dispatchNote"),
+        @Index(name = "idx_fileTrailOrigin", columnList = "fileTrailOrigin"),
+        @Index(name = "idx_createdBy", columnList = "createdBy"),
+        @Index(name = "idx_dueDate", columnList = "dueDate"),
+})
 @EntityListeners(AuditingEntityListener.class)
 @DynamicUpdate
 public class FileTrail {

@@ -1,6 +1,5 @@
 package com.elijahwaswa.filetracker.controller.file;
 
-import com.elijahwaswa.filetracker.consumer.ReminderConsumer;
 import com.elijahwaswa.filetracker.dto.FileDto;
 import com.elijahwaswa.filetracker.dto.FileTrailDto;
 import com.elijahwaswa.filetracker.dto.UserDto;
@@ -30,6 +29,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @AllArgsConstructor
@@ -42,8 +42,8 @@ public class FileController {
     private HttpServletRequest request;
     private HttpServletResponse response;
     private ReminderProducer reminderProducer;
-    private final ExecutorService executorService= Executors.newSingleThreadExecutor();
-    private final Logger LOGGER  = LoggerFactory.getLogger(FileController.class);
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private final Logger LOGGER = LoggerFactory.getLogger(FileController.class);
 
     @GetMapping
     public String listFilesPage(Model model) {
@@ -51,12 +51,17 @@ public class FileController {
         model.addAttribute("manageAllowed", manageAllowed());
         model.addAttribute("fileStatuses", FileStatus.values());
         model.addAttribute("fileSearchFilters", FileSearchFilter.values());
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Helpers.setViewModelAttrs(authentication,model);
+
         return "file/list";
     }
 
     @PostMapping
     @ResponseBody
-    public Map<String, Object> usersList(Model model, HttpSession session,
+    public Map<String, Object> usersList(Model model,
+                                         HttpSession session,
                                          @RequestParam(required = false) String draw,
                                          @RequestParam(required = false) int length,
                                          @RequestParam(required = false) int start,
@@ -75,6 +80,7 @@ public class FileController {
 
         try {
             int pageNumber = start / length;
+            AtomicInteger numbering = new AtomicInteger(start);
 
             if (fileSearchFilter == FileSearchFilter.LR_NO && filterSearchValue != null && !filterSearchValue.isBlank()) {
                 files = fileService.fetchFiles(pageNumber, length, filterSearchValue.trim());
@@ -102,6 +108,8 @@ public class FileController {
                         variables.put("manageAllowed", manageAllowed());
 
                         List<String> row = new ArrayList<>();
+                        numbering.incrementAndGet();
+                        row.add(numbering + "");
                         row.add(file.getLrNo());
                         row.add(file.getIrNo());
                         row.add(file.getCfNo());
@@ -141,6 +149,10 @@ public class FileController {
         model.addAttribute("fileStatuses", FileStatus.values());
         model.addAttribute("fileNatures", FileNature.values());
         model.addAttribute("manageAllowed", manageAllowed());
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Helpers.setViewModelAttrs(authentication,model);
+
         return "file/manage";
     }
 
@@ -225,6 +237,9 @@ public class FileController {
         model.addAttribute("manageFileTrail", manageFileTrail());
         model.addAttribute("fileTrailDto", new FileTrailDto());
         model.addAttribute("fileTrailOrigins", FileTrailOrigin.values());
+
+        Helpers.setViewModelAttrs(authentication,model);
+
         return "file/view";
     }
 
@@ -312,9 +327,9 @@ public class FileController {
         fileDto.setCurrentUserFullNames(userDtoFullNames);
         fileService.updateFile(fileDto);
 
-        executorService.execute(()->reminderProducer.sendMessage(
+        executorService.execute(() -> reminderProducer.sendMessage(
                 new ReminderEvent(savedFileTrail.getLrNo(), savedFileTrail.getId(), savedFileTrail.getAssignedToIdNumber(), savedFileTrail.getDepartment())
-                ,Helpers.timeDifference(ChronoUnit.MILLIS, LocalDateTime.now(), savedFileTrail.getDueDate())
+                , Helpers.timeDifference(ChronoUnit.MILLIS, LocalDateTime.now(), savedFileTrail.getDueDate())
         ));
 
         return "redirect:/files/view?id=" + fileId + "&success=File dispatched successfully";
@@ -334,10 +349,8 @@ public class FileController {
 
         try {
             int pageNumber = start / length;
+            AtomicInteger numbering = new AtomicInteger(start);
             fileTrails = fileTrailService.fetchFileTrails(pageNumber, length, lrNo);
-
-            //variables to be used in the jsp
-            Map<String, Object> variables = new HashMap<>();
 
             //transform List<FileTrailDto> to List<List<String>> for DataTables
             data = fileTrails.isEmpty() ? new ArrayList<>() : fileTrails
@@ -345,6 +358,8 @@ public class FileController {
                     .map(fileTrail -> {
                         List<String> row = new ArrayList<>();
                         long timeTaken = fileTrail.getTimeTakenInSeconds() != 0 ? fileTrail.getTimeTakenInSeconds() : Helpers.timeDifference(ChronoUnit.SECONDS, fileTrail.getAssignedOn(), LocalDateTime.now());
+                        numbering.incrementAndGet();
+                        row.add(numbering + "");
                         row.add(fileTrail.getAssignedByFullNames());
                         row.add(fileTrail.getAssignedOn() != null ? Helpers.formatDateTime(fileTrail.getAssignedOn(), Helpers.DATE_TIME_VIEW_FORMAT) : "");
                         row.add(fileTrail.getDepartment());
